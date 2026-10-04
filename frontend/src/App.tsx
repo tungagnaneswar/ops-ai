@@ -1,11 +1,36 @@
-import { ConfigProvider, Layout, Typography, Card, Button } from 'antd';
-import { RobotOutlined, SafetyCertificateOutlined, TeamOutlined, BellOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react';
+import { ConfigProvider, Layout, Typography, Card, Button, Dropdown } from 'antd';
+import { RobotOutlined, SafetyCertificateOutlined, TeamOutlined, BellOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
+import LoginModal from './components/LoginModal';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
 
 function App() {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [user, setUser] = useState<{username: string, token: string} | null>(null);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem('token');
+    const savedUsername = localStorage.getItem('username');
+    if (savedToken && savedUsername) {
+      setUser({ token: savedToken, username: savedUsername });
+    }
+  }, []);
+
+  const handleLoginSuccess = (token: string, username: string) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
+    setUser({ token, username });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    setUser(null);
+  };
+
   return (
     <ConfigProvider
       theme={{
@@ -23,7 +48,15 @@ function App() {
             <Title level={4} className="!mb-0 text-gray-800 tracking-tight">OpsAI</Title>
           </div>
           <div className="ml-auto">
-            <Button type="primary" shape="round">Sign In</Button>
+            {user ? (
+              <Dropdown menu={{ items: [{ key: 'logout', label: 'Logout', icon: <LogoutOutlined />, onClick: handleLogout }] }} placement="bottomRight">
+                <Button type="text" className="font-medium">
+                  <UserOutlined /> {user.username}
+                </Button>
+              </Dropdown>
+            ) : (
+              <Button type="primary" shape="round" onClick={() => setIsLoginModalOpen(true)}>Sign In</Button>
+            )}
           </div>
         </Header>
         
@@ -73,6 +106,12 @@ function App() {
           OpsAI Platform ©{new Date().getFullYear()} Created with Ant Design & Tailwind CSS
         </Footer>
       </Layout>
+
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+        onSuccess={handleLoginSuccess} 
+      />
     </ConfigProvider>
   );
 }

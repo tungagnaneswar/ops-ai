@@ -7,6 +7,17 @@ spring:
 
     cloud:
       gateway:
+        globalcors:
+          cors-configurations:
+            '[/**]':
+              allowedOrigins: "http://localhost:5173"
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              allowedHeaders: "*"
         routes:
           # Example 1: Route to an authentication microservice running on port 8081
           - id: auth-service
