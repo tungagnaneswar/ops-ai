@@ -1,0 +1,136 @@
+# ==============================================================================
+# OpsAI Platform - Root .gitignore
+# Covers Java/Spring Boot (Backend), Node/React/Vue (Frontend), and IDEs
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Backend (Java / Spring Boot / Maven)
+# ------------------------------------------------------------------------------
+target/
+*.class
+*.log
+
+# Package Files
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# Note: mvnw and .mvn/wrapper/maven-wrapper.properties should be committed
+
+# ------------------------------------------------------------------------------
+# 2. Frontend (Node.js / React / Vue)
+# ------------------------------------------------------------------------------
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directories
+node_modules/
+jspm_packages/
+dist/
+build/
+.next/
+out/
+coverage/
+.nuxt/
+
+# ------------------------------------------------------------------------------
+# 3. Environment Variables (Security)
+# ------------------------------------------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# ------------------------------------------------------------------------------
+# 4. IDEs and Editors
+# ------------------------------------------------------------------------------
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# ------------------------------------------------------------------------------
+# 5. OS Specific Files
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# ------------------------------------------------------------------------------
+# 6. Project Specific / Temporary Data
+# ------------------------------------------------------------------------------
+# Ignore any local database data mounts or temp docker files if they exist
+postgres-data/
+redis-data/
+kafka-data/
+zookeeper-data/
+*.rdb
