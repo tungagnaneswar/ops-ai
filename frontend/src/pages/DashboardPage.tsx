@@ -1,0 +1,76 @@
+import { Typography, Row, Col, Card, Statistic, Table, Tag } from 'antd';
+import { AlertOutlined, CheckCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { motion } from 'framer-motion';
+
+const { Title, Text } = Typography;
+
+export default function DashboardPage() {
+  const recentIncidents = [
+    { id: 'INC-101', title: 'Database connection latency', status: 'In Progress', severity: 'High' },
+    { id: 'INC-102', title: 'Payment gateway timeout', status: 'Resolved', severity: 'Critical' },
+    { id: 'INC-103', title: 'Frontend assets missing', status: 'Open', severity: 'Medium' },
+  ];
+
+  const columns = [
+    { title: 'ID', dataIndex: 'id', key: 'id' },
+    { title: 'Title', dataIndex: 'title', key: 'title' },
+    { 
+      title: 'Status', 
+      dataIndex: 'status', 
+      key: 'status',
+      render: (status: string) => {
+        let color = 'blue';
+        if (status === 'Resolved') color = 'green';
+        if (status === 'In Progress') color = 'orange';
+        return <Tag color={color}>{status}</Tag>;
+      }
+    },
+    { 
+      title: 'Severity', 
+      dataIndex: 'severity', 
+      key: 'severity',
+      render: (severity: string) => {
+        let color = 'default';
+        if (severity === 'Critical') color = 'red';
+        if (severity === 'High') color = 'volcano';
+        return <Tag color={color}>{severity}</Tag>;
+      }
+    }
+  ];
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+      <div className="mb-6">
+        <Title level={2} className="!mb-1">Dashboard</Title>
+        <Text className="text-gray-500">Overview of your system health and active incidents.</Text>
+      </div>
+
+      <Row gutter={16} className="mb-8">
+        <Col span={8}>
+          <Card bordered={false} className="shadow-sm border border-gray-100">
+            <Statistic title="Active Incidents" value={2} prefix={<AlertOutlined className="text-red-500" />} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card bordered={false} className="shadow-sm border border-gray-100">
+            <Statistic title="Resolved Today" value={14} prefix={<CheckCircleOutlined className="text-green-500" />} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card bordered={false} className="shadow-sm border border-gray-100">
+            <Statistic title="System Status" value="Healthy" valueStyle={{ color: '#52c41a' }} prefix={<SyncOutlined spin />} />
+          </Card>
+        </Col>
+      </Row>
+
+      <Title level={4} className="mb-4">Recent Incidents</Title>
+      <Table 
+        dataSource={recentIncidents} 
+        columns={columns} 
+        rowKey="id" 
+        pagination={false}
+        className="border border-gray-100 rounded-lg"
+      />
+    </motion.div>
+  );
+}

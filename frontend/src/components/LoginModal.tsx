@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Button, Tabs, message } from 'antd';
+import { Modal, Form, Input, Button, Tabs, message, Divider } from 'antd';
+import { authApi } from '../services/api';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,21 +15,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) =
   const handleLogin = async (values: any) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        message.success('Logged in successfully!');
-        onSuccess(data.token, data.username);
-        onClose();
-      } else {
-        message.error(data.message || 'Login failed');
-      }
-    } catch (error) {
-      message.error('An error occurred during login.');
+      const data = await authApi.login(values);
+      message.success('Logged in successfully!');
+      onSuccess(data.token, data.username);
+      onClose();
+    } catch (error: any) {
+      message.error(error.message || 'An error occurred during login.');
     } finally {
       setLoading(false);
     }
@@ -37,20 +29,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) =
   const handleRegister = async (values: any) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-      if (response.ok) {
-        message.success('Registered successfully! Please log in.');
-        setActiveTab('login');
-      } else {
-        const errorText = await response.text();
-        message.error(errorText || 'Registration failed');
-      }
-    } catch (error) {
-      message.error('An error occurred during registration.');
+      await authApi.register(values);
+      message.success('Registered successfully! Please log in.');
+      setActiveTab('login');
+    } catch (error: any) {
+      message.error(error.message || 'An error occurred during registration.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +52,20 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) =
             <Input.Password />
           </Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>Sign In</Button>
+          
+          <Divider>OR</Divider>
+          
+          <Button 
+            type="dashed" 
+            block 
+            onClick={() => {
+              message.success('Logged in successfully as Admin (Static)!');
+              onSuccess('static-admin-token', 'admin_user');
+              onClose();
+            }}
+          >
+            Login as Admin (Static)
+          </Button>
         </Form>
       )
     },
