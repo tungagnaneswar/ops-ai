@@ -66,23 +66,38 @@ ops-ai/
 - Docker & Docker Compose
 - PostgreSQL (or run via Docker)
 
-### 1. Start Infrastructure (Redis & Kafka)
-Start the required message broker and caching services:
+### 1. Database Setup (Local PostgreSQL)
+Ensure your local PostgreSQL server is running on port `5432`.
+Run `schema.sql` to create all 7 microservice databases (`opsai_auth`, `opsai_teams`, `opsai_incident`, etc.):
 ```bash
-docker-compose up -d
+# Using psql on Windows (or execute schema.sql in pgAdmin / DBeaver)
+psql -U postgres -f schema.sql
 ```
 
-### 2. Database Setup
-Execute the `schema.sql` script to create the necessary databases and tables.
-> **Note:** PostgreSQL does not support `USE database;`. You must create the databases first as a superuser, then connect to each database individually to run its respective schema section as detailed in the SQL file.
+### 2. Start Supporting Infrastructure (Redis & Kafka)
+Start Redis and Kafka message broker in Docker:
+```bash
+docker compose up -d
+```
 
-### 3. Run the Backend Services
-Navigate to each microservice directory and start it using Maven:
+### 3. Run Backend Microservices
+
+#### Option A: Run Entire Backend in Docker
+Runs all 8 microservices containerized (automatically connects to your local PostgreSQL via `host.docker.internal:5432`):
+```bash
+docker compose --profile backend up -d --build
+```
+Or to run a specific service (e.g., auth-service):
+```bash
+docker compose --profile backend up auth-service -d --build
+```
+
+#### Option B: Run Locally via Maven (IDE)
+Navigate to any microservice directory and start it:
 ```bash
 cd backend/api-gateway
 ./mvnw spring-boot:run
 ```
-*(Repeat for other necessary services)*
 
 ### 4. Run the Frontend
 Navigate to the frontend directory, install dependencies, and start the development server:
@@ -91,7 +106,13 @@ cd frontend
 npm install
 npm run dev
 ```
-The frontend should now be running at `http://localhost:5173` (or the port specified by Vite).
+The frontend will now run at `http://localhost:5173`.
+
+---
+
+## 📖 Detailed Operations & Command Guide
+For complete Kafka, Redis, PostgreSQL, log tailing, container healthchecks, and troubleshooting commands, see:
+👉 **[DOCKER_GUIDE.md](DOCKER_GUIDE.md)**
 
 ## 📄 License
 [MIT License](LICENSE) (or specify your license here)

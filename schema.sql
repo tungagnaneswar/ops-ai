@@ -29,9 +29,9 @@ CREATE DATABASE opsai_event;
 
 
 -- =============================================================================
--- STEP 2A: Connect to opsai_auth — then run the following:
--- \c opsai_auth
+-- STEP 2A: Connect to opsai_auth
 -- =============================================================================
+\c opsai_auth
 
 -- Shared trigger function: auto-updates updated_at on every UPDATE
 CREATE OR REPLACE FUNCTION set_updated_at()
@@ -108,9 +108,9 @@ CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 
 
 -- =============================================================================
--- STEP 2B: Connect to opsai_teams — then run the following:
--- \c opsai_teams
+-- STEP 2B: Connect to opsai_teams
 -- =============================================================================
+\c opsai_teams
 
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
@@ -147,9 +147,9 @@ CREATE INDEX idx_team_members_user_id ON team_members(user_id);
 
 
 -- =============================================================================
--- STEP 2C: Connect to opsai_incident — then run the following:
--- \c opsai_incident
+-- STEP 2C: Connect to opsai_incident
 -- =============================================================================
+\c opsai_incident
 
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
@@ -230,9 +230,9 @@ CREATE TABLE incident_tag_map (
 
 
 -- =============================================================================
--- STEP 2D: Connect to opsai_notification — then run the following:
--- \c opsai_notification
+-- STEP 2D: Connect to opsai_notification
 -- =============================================================================
+\c opsai_notification
 
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
@@ -296,9 +296,9 @@ CREATE TRIGGER trg_notification_channels_updated_at
 
 
 -- =============================================================================
--- STEP 2E: Connect to opsai_audit — then run the following:
--- \c opsai_audit
+-- STEP 2E: Connect to opsai_audit
 -- =============================================================================
+\c opsai_audit
 
 -- Append-only audit log — NEVER update or delete rows here
 CREATE TABLE audit_logs (
@@ -322,9 +322,9 @@ CREATE INDEX idx_audit_created_at    ON audit_logs(created_at);
 
 
 -- =============================================================================
--- STEP 2F: Connect to opsai_ai — then run the following:
--- \c opsai_ai
+-- STEP 2F: Connect to opsai_ai
 -- =============================================================================
+\c opsai_ai
 
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
@@ -376,9 +376,9 @@ CREATE INDEX idx_ai_analyses_type     ON ai_analyses(analysis_type);
 
 
 -- =============================================================================
--- STEP 2G: Connect to opsai_event — then run the following:
--- \c opsai_event
+-- STEP 2G: Connect to opsai_event
 -- =============================================================================
+\c opsai_event
 
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
