@@ -1,14 +1,72 @@
-import { Typography, Tabs, Form, Input, Button, Switch, Divider, Card } from 'antd';
+import { useState, useEffect } from 'react';
+import { Typography, Tabs, Form, Input, Button, Switch, Divider, Card, message, Spin } from 'antd';
 import { UserOutlined, BellOutlined, SecurityScanOutlined, ApiOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
+import { userApi } from '../services/api';
 
 const { Title, Text } = Typography;
 
 export default function SettingsPage() {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = (values: any) => {
-    console.log('Saved settings:', values);
+  useEffect(() => {
+    const loadProfile = async () => {
+      setLoading(true);
+      try {
+        const profile = await userApi.getProfile();
+        form.setFieldsValue({
+          name: `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.username,
+          username: profile.username,
+          email: profile.email,
+          role: profile.roles && profile.roles.length > 0 ? profile.roles.join(', ') : 'Operator',
+        });
+      } catch (err) {
+        // Fallback to localStorage info if backend offline
+        const localUser = localStorage.getItem('user');
+        const username = localStorage.getItem('username') || 'Operator';
+        if (localUser) {
+          try {
+            const parsed = JSON.parse(localUser);
+            form.setFieldsValue({
+              name: parsed.username,
+              username: parsed.username,
+              email: parsed.email || 'operator@opsai.internal',
+              role: 'Operator',
+            });
+          } catch {
+            form.setFieldsValue({ name: username, username, email: 'operator@opsai.internal', role: 'Operator' });
+          }
+        } else {
+          form.setFieldsValue({ name: username, username, email: 'operator@opsai.internal', role: 'Operator' });
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [form]);
+
+  const handleSave = async (values: any) => {
+    setSaving(true);
+    try {
+      const parts = (values.name || '').trim().split(' ');
+      const firstName = parts[0] || '';
+      const lastName = parts.slice(1).join(' ') || '';
+
+      await userApi.updateProfile({
+        firstName,
+        lastName,
+        email: values.email,
+      });
+      message.success('Profile updated successfully!');
+    } catch (error: any) {
+      message.error(error.message || 'Failed to update profile.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const items = [
@@ -23,18 +81,25 @@ export default function SettingsPage() {
       children: (
         <Card bordered={false} className="shadow-sm">
           <Title level={4} className="mb-4">Personal Information</Title>
-          <Form form={form} layout="vertical" onFinish={handleSave} initialValues={{ name: 'Admin User', email: 'admin@opsai.com' }}>
-            <Form.Item label="Full Name" name="name" rules={[{ required: true }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Email Address" name="email" rules={[{ required: true, type: 'email' }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Role" name="role">
-              <Input disabled defaultValue="Administrator" />
-            </Form.Item>
-            <Button type="primary" htmlType="submit">Save Changes</Button>
-          </Form>
+          {loading ? (
+            <div className="py-8 text-center"><Spin /></div>
+          ) : (
+            <Form form={form} layout="vertical" onFinish={handleSave}>
+              <Form.Item label="Display Name" name="name" rules={[{ required: true, message: 'Please enter name' }]}>
+                <Input placeholder="Your Name" />
+              </Form.Item>
+              <Form.Item label="Username" name="username">
+                <Input disabled />
+              </Form.Item>
+              <Form.Item label="Email Address" name="email" rules={[{ required: true, type: 'email', message: 'Valid email required' }]}>
+                <Input placeholder="user@company.com" />
+              </Form.Item>
+              <Form.Item label="Assigned Role" name="role">
+                <Input disabled />
+              </Form.Item>
+              <Button type="primary" htmlType="submit" loading={saving}>Save Changes</Button>
+            </Form>
+          )}
         </Card>
       ),
     },
