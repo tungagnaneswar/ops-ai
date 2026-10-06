@@ -7,64 +7,66 @@ spring:
 
   cloud:
     gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins:
-              - "http://localhost:5173"
-              - "http://localhost:3000"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
+      server:
+        webmvc:
+          routes:
+            # Route to auth-service
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/auth/**
+
+            # Route to user endpoints in auth-service
+            - id: users-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/users/**
+
+            # Route to incident-service
+            - id: incident-service
+              uri: ${INCIDENT_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/incidents/**, /api/v1/incident/**
+
+            # Route to team-service
+            - id: team-service
+              uri: ${TEAM_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/teams/**
+
+            # Route to notification-service
+            - id: notification-service
+              uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/v1/notifications/**
+
+            # Route to audit-service
+            - id: audit-service
+              uri: ${AUDIT_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/v1/audit/**
+
+            # Route to ai-service
+            - id: ai-service
+              uri: ${AI_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/ai/**
+
+            # Route to event-simulator
+            - id: event-simulator
+              uri: ${EVENT_SERVICE_URL:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/events/**
       routes:
-        # Route to auth-service
-        - id: auth-service
+        - id: auth-service-compat
           uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/v1/auth/**
-
-        # Route to user endpoints in auth-service
-        - id: users-service
+        - id: users-service-compat
           uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/v1/users/**
-
-        # Route to incident-service
-        - id: incident-service
+        - id: incident-service-compat
           uri: ${INCIDENT_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/v1/incidents/**, /api/v1/incident/**
-
-        # Route to team-service
-        - id: team-service
-          uri: ${TEAM_SERVICE_URL:http://localhost:8083}
-          predicates:
-            - Path=/api/v1/teams/**
-
-        # Route to notification-service
-        - id: notification-service
-          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
-          predicates:
-            - Path=/api/v1/notifications/**
-
-        # Route to audit-service
-        - id: audit-service
-          uri: ${AUDIT_SERVICE_URL:http://localhost:8085}
-          predicates:
-            - Path=/api/v1/audit/**
-
-        # Route to ai-service
-        - id: ai-service
-          uri: ${AI_SERVICE_URL:http://localhost:8086}
-          predicates:
-            - Path=/api/v1/ai/**
-
-        # Route to event-simulator
-        - id: event-simulator
-          uri: ${EVENT_SIMULATOR_URL:http://localhost:8087}
-          predicates:
-            - Path=/api/v1/events/**

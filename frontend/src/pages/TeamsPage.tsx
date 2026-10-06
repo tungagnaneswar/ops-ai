@@ -47,35 +47,35 @@ export default function TeamsPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <Title level={2} className="!mb-1">Teams</Title>
-          <Text className="text-gray-500">Manage on-call schedules, escalations, and team members.</Text>
+          <Title level={2} className="!mb-1 text-2xl sm:text-3xl font-bold">Teams</Title>
+          <Text className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">Manage on-call schedules, escalations, and team members.</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)} className="w-full sm:w-auto">
           Create Team
         </Button>
       </div>
 
       <Row gutter={[16, 16]}>
         {teams.map(team => (
-          <Col xs={24} sm={12} md={8} key={team.id}>
+          <Col xs={24} sm={12} lg={8} key={team.id}>
             <motion.div whileHover={{ y: -4 }}>
               <Card 
-                className="shadow-sm border-gray-100 hover:shadow-md transition-all h-full flex flex-col"
-                title={team.name}
+                className="shadow-sm border-gray-100 dark:border-zinc-800 dark:bg-[#1c1c1e] hover:shadow-md transition-all h-full flex flex-col"
+                title={<span className="dark:text-gray-100 font-semibold">{team.name}</span>}
                 extra={<Button type="link" className="p-0 h-auto" onClick={() => openViewModal(team)}>View</Button>}
               >
-                <Text className="text-gray-500 block mb-6 min-h-[44px]">
+                <Text className="text-gray-500 dark:text-gray-400 block mb-6 min-h-[44px] text-sm">
                   {team.description}
                 </Text>
-                <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-50">
+                <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-100 dark:border-zinc-800">
                   <Avatar.Group maxCount={4} size="small">
                     {Array.from({ length: Math.min(team.members, 10) }).map((_, i) => (
                       <Avatar key={i} icon={<UserOutlined />} />
                     ))}
                   </Avatar.Group>
-                  <Text className="text-gray-400 text-sm">{team.members} Members</Text>
+                  <Text className="text-gray-400 text-xs sm:text-sm">{team.members} Members</Text>
                 </div>
               </Card>
             </motion.div>
@@ -89,7 +89,9 @@ export default function TeamsPage() {
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
+        style={{ maxWidth: '95vw' }}
+        width={500}
       >
         <Form form={form} layout="vertical" onFinish={handleCreateTeam} className="mt-4">
           <Form.Item 
@@ -110,7 +112,7 @@ export default function TeamsPage() {
           
           <Form.Item 
             name="members" 
-            label="Initial Member Count"
+            label="Initial Member Count" 
             initialValue={1}
           >
             <InputNumber min={1} max={100} className="w-full" />
@@ -133,41 +135,42 @@ export default function TeamsPage() {
             Close
           </Button>
         ]}
+        style={{ maxWidth: '95vw' }}
+        width={550}
       >
         {selectedTeam && (
           <div className="mt-4">
-            <Text className="text-gray-600 block mb-4 text-base">{selectedTeam.description}</Text>
+            <Text className="text-gray-600 dark:text-gray-300 block mb-4 text-sm sm:text-base">{selectedTeam.description}</Text>
             
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
+            <div className="mb-6 p-3 sm:p-4 bg-blue-50 dark:bg-blue-950/40 rounded-lg border border-blue-100 dark:border-blue-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <Text strong className="block text-blue-800 mb-1">Current On-Call</Text>
+                <Text strong className="block text-blue-800 dark:text-blue-300 mb-1 text-xs uppercase tracking-wide">Current On-Call</Text>
                 <div className="flex items-center gap-2">
                   <Avatar icon={<UserOutlined />} size="small" className="bg-blue-500" />
-                  <Text>Jane Doe</Text>
+                  <Text className="dark:text-gray-200 font-medium">Jane Doe</Text>
                 </div>
               </div>
-              <Tag icon={<ClockCircleOutlined />} color="blue">Active until 8:00 AM</Tag>
+              <Tag icon={<ClockCircleOutlined />} color="blue" className="m-0">Active until 8:00 AM</Tag>
             </div>
 
-            <Title level={5} className="!mb-3">Team Members ({selectedTeam.members})</Title>
+            <Title level={5} className="!mb-3 text-sm font-semibold">Team Members ({selectedTeam.members})</Title>
             <List
               itemLayout="horizontal"
               dataSource={Array.from({ length: Math.min(selectedTeam.members, 5) }).map((_, i) => i)}
               renderItem={(item) => (
-                <List.Item className="!py-2 border-b border-gray-50 last:border-0">
+                <List.Item className="!py-2 border-b border-gray-100 dark:border-zinc-800 last:border-0">
                   <List.Item.Meta
-                    avatar={<Avatar icon={<UserOutlined />} className="bg-gray-200 text-gray-500" />}
-                    title={<Text>Engineer {item + 1}</Text>}
-                    description="Software Engineer"
+                    avatar={<Avatar icon={<UserOutlined />} className="bg-gray-200 dark:bg-zinc-700 text-gray-500 dark:text-gray-300" />}
+                    title={<Text className="text-sm">Engineer {item + 1}</Text>}
+                    description={<span className="text-gray-500 dark:text-gray-400 text-xs">Software Engineer</span>}
                   />
                 </List.Item>
               )}
             />
             {selectedTeam.members > 5 && (
-              <Text className="text-gray-400 block mt-2 text-center text-sm">
+              <Text className="text-gray-400 block mt-2 text-center text-xs">
                 + {selectedTeam.members - 5} more members...
               </Text>
-
             )}
           </div>
         )}
