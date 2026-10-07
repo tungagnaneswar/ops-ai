@@ -104,6 +104,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) =
       
       localStorage.setItem('token', data.token);
       localStorage.setItem('username', data.username);
+      if (data.refreshToken) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+      }
+      if (data.sessionId) {
+        localStorage.setItem('sessionId', String(data.sessionId));
+      }
       localStorage.setItem('user', JSON.stringify({
         id: data.id,
         username: data.username,

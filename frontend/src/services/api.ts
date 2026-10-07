@@ -15,20 +15,37 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string;
+  refreshToken?: string;
+  sessionId?: number;
   type: string;
   id: number;
   username: string;
   email: string;
 }
 
+export interface Session {
+  id: number;
+  ipAddress?: string;
+  userAgent?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+  createdAt: string;
+  expiresAt: string;
+  current?: boolean;
+}
+
 export interface UserProfile {
   id: number;
+  publicId?: string;
   username: string;
   email: string;
   firstName?: string;
   lastName?: string;
   status?: string;
   roles?: string[];
+  createdAt?: string;
+  lastLoginAt?: string;
 }
 
 export interface ApiResponse<T = any> {
@@ -39,10 +56,12 @@ export interface ApiResponse<T = any> {
 
 async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('token');
+  const refreshToken = localStorage.getItem('refreshToken');
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(refreshToken ? { 'X-Refresh-Token': refreshToken } : {}),
     ...((options.headers as Record<string, string>) || {}),
   };
 
@@ -53,7 +72,37 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
 
   // Handle 401 Unauthorized (expired or invalid token)
   if (response.status === 401) {
+    // If not a login attempt, try refresh token if present
+    if (!endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh') && refreshToken) {
+      try {
+        const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (refreshRes.ok) {
+          const refreshData: AuthResponse = await refreshRes.json();
+          localStorage.setItem('token', refreshData.token);
+          if (refreshData.refreshToken) {
+            localStorage.setItem('refreshToken', refreshData.refreshToken);
+          }
+          // Retry original request with new token
+          headers['Authorization'] = `Bearer ${refreshData.token}`;
+          const retryRes = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
+          if (retryRes.ok) {
+            const text = await retryRes.text();
+            if (!text) return null;
+            try { return JSON.parse(text); } catch { return { message: text }; }
+          }
+        }
+      } catch {
+        // Refresh failed, proceed to logout cleanup
+      }
+    }
+
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('sessionId');
     localStorage.removeItem('username');
     localStorage.removeItem('user');
     
@@ -97,7 +146,17 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    return res as AuthResponse;
+    const authData = res as AuthResponse;
+    if (authData.token) {
+      localStorage.setItem('token', authData.token);
+    }
+    if (authData.refreshToken) {
+      localStorage.setItem('refreshToken', authData.refreshToken);
+    }
+    if (authData.sessionId) {
+      localStorage.setItem('sessionId', String(authData.sessionId));
+    }
+    return authData;
   },
 
   register: async (data: RegisterRequest): Promise<{ message: string }> => {
@@ -113,10 +172,24 @@ export const authApi = {
     return res as UserProfile;
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('user');
+  logout: async (): Promise<void> => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    try {
+      if (refreshToken) {
+        await fetchWithAuth('/auth/logout', {
+          method: 'POST',
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch {
+      // Ignore network errors on logout
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('sessionId');
+      localStorage.removeItem('username');
+      localStorage.removeItem('user');
+    }
   },
 
   isAuthenticated: (): boolean => {
@@ -135,10 +208,44 @@ export const authApi = {
   },
 };
 
+export const sessionApi = {
+  getActiveSessions: async (): Promise<Session[]> => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const res = await fetchWithAuth('/auth/sessions', {
+      headers: refreshToken ? { 'X-Refresh-Token': refreshToken } : {},
+    });
+    return (Array.isArray(res) ? res : []) as Session[];
+  },
+
+  revokeSession: async (id: number): Promise<{ message: string }> => {
+    const res = await fetchWithAuth(`/auth/sessions/${id}`, {
+      method: 'DELETE',
+    });
+    return res as { message: string };
+  },
+
+  revokeAllOtherSessions: async (): Promise<{ message: string }> => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const res = await fetchWithAuth('/auth/sessions/revoke-all', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken }),
+    });
+    return res as { message: string };
+  },
+};
+
 export const userApi = {
   getProfile: (): Promise<UserProfile> => fetchWithAuth('/users/me'),
   updateProfile: (data: Partial<UserProfile>): Promise<UserProfile> =>
     fetchWithAuth('/users/me', { method: 'PUT', body: JSON.stringify(data) }),
+  changePassword: (data: { currentPassword: string; newPassword: string }): Promise<{ message: string }> =>
+    fetchWithAuth('/users/me/password', { method: 'PUT', body: JSON.stringify(data) }),
+  getSessions: (): Promise<Session[]> => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    return fetchWithAuth('/users/me/sessions', {
+      headers: refreshToken ? { 'X-Refresh-Token': refreshToken } : {},
+    });
+  },
 };
 
 export const incidentsApi = {

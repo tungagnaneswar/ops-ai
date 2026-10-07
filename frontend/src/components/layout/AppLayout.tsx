@@ -13,6 +13,7 @@ import {
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import ThemeToggle from '../ThemeToggle';
 import { useTheme } from '../../context';
+import { authApi } from '../../services/api';
 
 const { Header, Sider, Content } = Layout;
 
@@ -32,10 +33,12 @@ export default function AppLayout() {
     }
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } finally {
+      navigate('/');
+    }
   };
 
   const menuItems = [
@@ -158,7 +161,7 @@ export default function AppLayout() {
           placement="left"
           onClose={() => setMobileDrawerOpen(false)}
           open={mobileDrawerOpen}
-          width={280}
+          size={280}
           styles={{ body: { padding: 0 } }}
           className="lg:hidden"
         >

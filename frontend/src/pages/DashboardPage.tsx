@@ -49,18 +49,18 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]} className="mb-8">
         <Col xs={24} sm={12} lg={8}>
-          <Card bordered={false} className="shadow-sm border border-gray-100 dark:border-zinc-800 dark:bg-[#1c1c1e] hover:shadow-md transition-shadow">
+          <Card variant="borderless" className="shadow-sm border border-gray-100 dark:border-zinc-800 dark:bg-[#1c1c1e] hover:shadow-md transition-shadow">
             <Statistic title="Active Incidents" value={2} prefix={<AlertOutlined className="text-red-500" />} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={8}>
-          <Card bordered={false} className="shadow-sm border border-gray-100 dark:border-zinc-800 dark:bg-[#1c1c1e] hover:shadow-md transition-shadow">
+          <Card variant="borderless" className="shadow-sm border border-gray-100 dark:border-zinc-800 dark:bg-[#1c1c1e] hover:shadow-md transition-shadow">
             <Statistic title="Resolved Today" value={14} prefix={<CheckCircleOutlined className="text-green-500" />} />
           </Card>
         </Col>
         <Col xs={24} sm={24} lg={8}>
-          <Card bordered={false} className="shadow-sm border border-gray-100 dark:border-zinc-800 dark:bg-[#1c1c1e] hover:shadow-md transition-shadow">
-            <Statistic title="System Status" value="Healthy" valueStyle={{ color: '#52c41a' }} prefix={<SyncOutlined spin />} />
+          <Card variant="borderless" className="shadow-sm border border-gray-100 dark:border-zinc-800 dark:bg-[#1c1c1e] hover:shadow-md transition-shadow">
+            <Statistic title="System Status" value="Healthy" styles={{ content: { color: '#52c41a' } }} prefix={<SyncOutlined spin />} />
           </Card>
         </Col>
       </Row>

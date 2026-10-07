@@ -20,6 +20,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from '../components/LoginModal';
 import ThemeToggle from '../components/ThemeToggle';
+import { authApi } from '../services/api';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -49,10 +50,12 @@ export default function LandingPage() {
     navigate('/dashboard');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    setUser(null);
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } finally {
+      setUser(null);
+    }
   };
 
   const capabilities = [

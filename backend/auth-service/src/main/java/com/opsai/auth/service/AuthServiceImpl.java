@@ -4,11 +4,13 @@ import com.opsai.auth.dto.AuthResponse;
 import com.opsai.auth.dto.LoginRequest;
 import com.opsai.auth.dto.RegisterRequest;
 import com.opsai.auth.model.Role;
+import com.opsai.auth.model.Session;
 import com.opsai.auth.model.User;
 import com.opsai.auth.repository.RoleRepository;
 import com.opsai.auth.repository.UserRepository;
 import com.opsai.auth.security.CustomUserDetails;
 import com.opsai.auth.security.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -29,22 +32,32 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
+    private final SessionService sessionService;
 
     @Autowired
     public AuthServiceImpl(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder encoder,
-                           JwtService jwtService) {
+                           JwtService jwtService,
+                           SessionService sessionService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.encoder = encoder;
         this.jwtService = jwtService;
+        this.sessionService = sessionService;
     }
 
     @Override
+    @Transactional
     public AuthResponse login(LoginRequest loginRequest) {
+        return login(loginRequest, null);
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse login(LoginRequest loginRequest, HttpServletRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
@@ -53,10 +66,23 @@ public class AuthServiceImpl implements AuthService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        return new AuthResponse(jwt,
+        // Update last login timestamp
+        Optional<User> userOpt = userRepository.findById(userDetails.getId());
+        User user = userOpt.orElseThrow(() -> new IllegalStateException("Authenticated user not found in database"));
+        user.setLastLoginAt(OffsetDateTime.now());
+        userRepository.save(user);
+
+        // Record active session in sessions table
+        Session session = sessionService.createSession(user, request);
+
+        return new AuthResponse(
+                jwt,
+                session.getRefreshToken(),
+                session.getId(),
                 userDetails.getId(),
                 userDetails.getUsername(),
-                userDetails.getEmail());
+                userDetails.getEmail()
+        );
     }
 
     @Override

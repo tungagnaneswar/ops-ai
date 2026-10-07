@@ -22,6 +22,12 @@ spring:
               predicates:
                 - Path=/api/v1/users/**
 
+            # Route to session endpoints in auth-service
+            - id: sessions-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/sessions/**
+
             # Route to incident-service
             - id: incident-service
               uri: ${INCIDENT_SERVICE_URL:http://localhost:8082}
@@ -66,6 +72,10 @@ spring:
           uri: ${AUTH_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/api/v1/users/**
+        - id: sessions-service-compat
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/sessions/**
         - id: incident-service-compat
           uri: ${INCIDENT_SERVICE_URL:http://localhost:8082}
           predicates:
